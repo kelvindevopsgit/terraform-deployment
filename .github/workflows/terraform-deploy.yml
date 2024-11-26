@@ -10,8 +10,7 @@ jobs:
     runs-on: ubuntu-latest
 
     permissions:
-      id-token: write  # Required for OIDC.
-      contents: read   # Default permission.
+      contents: read  # Default permission.
 
     steps:
       - name: Checkout Code
@@ -21,9 +20,10 @@ jobs:
         uses: azure/login@v1
         with:
           client-id: ${{ secrets.AZURE_CLIENT_ID }}
+          client-secret: ${{ secrets.AZURE_CLIENT_SECRET }}
           tenant-id: ${{ secrets.AZURE_TENANT_ID }}
           subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
-          auth-type: oidc  # Using federated credentials.
+          auth-type: servicePrincipal  # Use Service Principal authentication.
 
       - name: Terraform Init
         run: terraform init
