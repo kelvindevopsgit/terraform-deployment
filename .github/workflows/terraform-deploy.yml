@@ -1,4 +1,4 @@
-name: Terraform CI/CD
+name: Deploy Terraform
 
 on:
   push:
@@ -6,31 +6,27 @@ on:
       - main
 
 jobs:
-  terraform:
+  deploy:
     runs-on: ubuntu-latest
+
+    permissions:
+      id-token: write  # Required for OIDC.
+      contents: read   # Default permission.
 
     steps:
       - name: Checkout Code
         uses: actions/checkout@v3
 
-      - name: Setup Terraform
-        uses: hashicorp/setup-terraform@v2
-        with:
-          terraform_version: 1.6.0
-
-      - name: Azure Login
+      - name: Login to Azure
         uses: azure/login@v1
         with:
           client-id: ${{ secrets.AZURE_CLIENT_ID }}
           tenant-id: ${{ secrets.AZURE_TENANT_ID }}
           subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
-          client-secret: ${{ secrets.AZURE_CLIENT_SECRET }}
+          auth-type: oidc  # Using federated credentials.
 
-      - name: Initialize Terraform
-        run: terraform init -backend-config="storage_account_name=martinzterraformstate"
+      - name: Terraform Init
+        run: terraform init
 
-      - name: Plan
-        run: terraform plan -var-file=terraform.tfvars
-
-      - name: Apply
-        run: terraform apply -auto-approve -var-file=terraform.tfvars
+      - name: Terraform Apply
+        run: terraform apply -auto-approve
